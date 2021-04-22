@@ -152,7 +152,7 @@ function createShapes() {
         }
         if (!this.partCylind) {
             this.partCylind = new PartialCylinder([0, 0, 0], 0.5, 1, 56, 90, 270);
-            this.objectsContainer.push(this.partCylind);
+            //this.objectsContainer.push(this.partCylind);
         }
         if (!this.cone) {
             this.cone = new Cone([0, 0, 0], 1, 1.2, 24);
@@ -164,7 +164,7 @@ function createShapes() {
         }
         if (!this.house) {
             this.house = new House([0, 0, 0], 0.8, 0.3, 0.6, 0.8);
-            //this.objectsContainer.push(this.house);
+            this.objectsContainer.push(this.house);
         }
     }
     return this.objectsContainer;

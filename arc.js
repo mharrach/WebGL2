@@ -1,34 +1,37 @@
 class Arc {
-    constructor(center_x, center_y, center_z, radius, startAngDeg, endAngDeg, n, pos3d) {
+    constructor(center_x, center_y, center_z, radius, startAngDeg, endAngDeg, pts, pos3d) {
         this.center_x = center_x;
         this.center_y = center_y;
         this.center_z = center_z;
         this.radius = radius;
         this.startAngDeg = startAngDeg;
         this.endAngDeg = endAngDeg;
-        this.n = n; //number of lines
+        this.pts = pts;
+        this.pos3d = pos3d;
         this.vbo = undefined;
         this.colorsVbo = undefined;
         this.pos3d = pos3d;
     }
     _getVbo(gl) {
         if (!this.vbo) {
+            var x, y, z;
             var cx = this.center_x;
             var cy = this.center_y;
             var cz = this.center_z;
+            var segments = this.pts - 1;
             var startAngRad = this.startAngDeg * Math.PI / 180;
             var endAngRad = this.endAngDeg * Math.PI / 180;
+            var sweepAngRad = (endAngRad - startAngRad);
+            var incAngRad = sweepAngRad / segments;
             var positions = [];
             var colors = [];
 
-            for (let i = 0; i <= this.n; i++) {
-                var angle = (startAngRad - endAngRad) * i / this.n;
-                var x = cx + this.radius * Math.sin(angle);
-                var y = cy + this.radius * Math.cos(angle);
-                var z = cz;
+            for (let i = 0; i < this.pts; i++) {
+                x = cx + this.radius * Math.cos(startAngRad + i * incAngRad);
+                y = cy + this.radius * Math.sin(startAngRad + i * incAngRad);
+                z = cz;
                 positions.push(x, y, z);
                 colors.push(Math.random(), Math.random(), Math.random(), 1);
-
             }
 
             this.vertexCount = positions.length / 3;
