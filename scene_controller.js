@@ -1,0 +1,78 @@
+class SceneController {
+    constructor(canvasWidth, canvasHeight) {
+        this.modelViewMat = undefined;
+        this.projMat = undefined;
+        this.normalMat = undefined;
+        this._tMatRotXZ = undefined;
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+    }
+    _getNormalMat() {
+        if (!this.normalMat) {
+            this.normalMat = glMatrix.mat4.create();
+        }
+        return this.normalMat;
+    }
+    _getModelViewMat() {
+        if (!this.modelViewMat) {
+            this.modelViewMat = glMatrix.mat4.create();
+        }
+        return this.modelViewMat;
+    }
+    _getProjMat() {
+        if (!this.projMat) {
+            this.projMat = glMatrix.mat4.create();
+        }
+        return this.projMat;
+    }
+    _getXZRotMAt() {
+        if (!this._tMatRotXZ) {
+            this._tMatRotXZ = glMatrix.mat4.create();
+        }
+        return this._tMatRotXZ;
+    }
+    setModelViewMat(gl, shaderProgram, outputMatrix, inputMatrix1, inputMatrix2) {
+        this.modelViewMat = glMatrix.mat4.multiply(outputMatrix, inputMatrix1, inputMatrix2);
+        var umvMat_loc = gl.getUniformLocation(shaderProgram, "mvMat");
+        gl.uniformMatrix4fv(umvMat_loc, false, this.modelViewMat);
+    }
+    setNormalMat(gl, shaderProgram) {
+        var normalMat_loc = gl.getUniformLocation(shaderProgram, "normalMat");
+        gl.uniformMatrix4fv(normalMat_loc, false, this.normalMat);
+    }
+    setProjMat(gl, shaderProgram, range) {
+        const w = this.canvasWidth;
+        const h = this.canvasHeight;
+        var aspectRatio = w / h;
+        var left = -range / 2,
+            right = range / 2,
+            bottom = (-range / 2) / aspectRatio,
+            top = (range / 2) / aspectRatio,
+            near = -range / 2,
+            far = range / 2;
+        this.projMat = glMatrix.mat4.ortho(this._getProjMat(), left, right, bottom, top, near, far);
+        var uprojMat_loc = gl.getUniformLocation(shaderProgram, "projMat");
+        gl.uniformMatrix4fv(uprojMat_loc, false, this.projMat);
+    }
+    setRotationMat(rotationAxisChar, rotationAngleRad) {
+        var rotationAxis;
+        var output = glMatrix.mat4.create();
+        if (rotationAxisChar.toUpperCase() === "X") {
+            rotationAxis = glMatrix.vec3.fromValues(1, 0, 0);
+        } else if (rotationAxisChar.toUpperCase() === "Y") {
+            rotationAxis = glMatrix.vec3.fromValues(0, 1, 0);
+        } else if (rotationAxisChar.toUpperCase() === "Z") {
+            rotationAxis = glMatrix.vec3.fromValues(0, 0, 1);
+        } else {
+            console.error("Rotation axis incorrect");
+        }
+        var rotationMatrix = glMatrix.mat4.fromRotation(output, rotationAngleRad, rotationAxis);
+
+        return rotationMatrix;
+    }
+    setRotationMatXZ(tMatRotX, tMatRotZ) {
+        this._tMatRotXZ = glMatrix.mat4.multiply(this._getXZRotMAt(), tMatRotX, tMatRotZ);
+        return this._tMatRotXZ;
+    }
+
+}
