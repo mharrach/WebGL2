@@ -43,12 +43,19 @@ function createShader() {
     //Fragment shader source code
     var fragCode =
         'precision mediump float;' +
+        'uniform bool u_hasNormals;' +
         'varying vec4 vColor;' +
         'varying vec3 vNormal;' +
         'void main(void) {' +
         'vec3 camDirCC = vec3(0.0, 0.0, 1.0);' + //camera coordinates (0, 0, -z)
         'float dotProd = dot(camDirCC, vNormal);' +
-        'vec3 finalColor = vColor.rgb * dotProd;' +
+        'vec3 finalColor;' +
+        'if (u_hasNormals){' +
+        'finalColor = vColor.rgb * dotProd;' +
+        '}' +
+        'else{' +
+        'finalColor = vColor.rgb;' +
+        '}' +
         'gl_FragColor = vec4(finalColor, vColor.a);' +
         '}';
 
@@ -164,7 +171,27 @@ function createShapes() {
         }
         if (!this.house) {
             this.house = new House([0, 0, 0], 0.8, 0.3, 0.6, 0.8);
-            this.objectsContainer.push(this.house);
+            //this.objectsContainer.push(this.house);
+        }
+        if (!this.hollowCylind) {
+            this.hollowCylind = new HollowCylinder([0, 0, 0], 0.5, 0.8, 2, 12);
+            //this.objectsContainer.push(this.hollowCylind);
+        }
+        if (!this.partHolCylind) {
+            this.partHolCylind = new PartialHollowCylinder([0, 0, 0], 0.5, 0.8, 2, 12, 45, 180);
+            //this.objectsContainer.push(this.partHolCylind);
+        }
+        if (!this.carpet) {
+            this.carpet = new Carpet([0, 0, 0], 1, 1, 100, 100);
+            //this.objectsContainer.push(this.carpet);
+        }
+        if (!this.graph) {
+            this.graph = new SinusGraph(20);
+            //this.objectsContainer.push(this.graph);
+        }
+        if (!this.ground) {
+            this.ground = new Ground([0, 0, 0], 1, 1);
+            this.objectsContainer.push(this.ground);
         }
     }
     return this.objectsContainer;
