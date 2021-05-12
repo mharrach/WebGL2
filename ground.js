@@ -19,6 +19,7 @@ class Ground {
             var vertices = [];
             var startx, endx;
             var starty, endy;
+            var startz, endz;
 
             // Creating x lines
             for (let i = -l / 2; i <= l / 2; i += 0.1) {
@@ -43,6 +44,12 @@ class Ground {
             endy = new Point(0, l / 2, 0);
             this.pointsArray.push(starty, endy);
             this.colorsArray.push(new Color(0, 1, 0, 1), new Color(0, 1, 0, 1));
+
+            // Adding z-axis
+            startz = new Point(0, 0, 0);
+            endz = new Point(0, 0, 0.5);
+            this.pointsArray.push(startz, endz);
+            this.colorsArray.push(new Color(0, 0, 1, 1), new Color(0, 0, 1, 1));
 
             for (let a = 0; a < this.pointsArray.length; a++) {
                 const element = this.pointsArray[a];
@@ -99,6 +106,9 @@ class Ground {
 
         var uObjectPos_loc = gl.getUniformLocation(shaderProgram, "objectPos");
         gl.uniform3fv(uObjectPos_loc, this.pos3d);
+
+        var hasNormal_loc = gl.getUniformLocation(shaderProgram, "u_hasNormals");
+        gl.uniform1i(hasNormal_loc, false);
 
         var vertex_buffer = this._getVbo(gl).position;
         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);

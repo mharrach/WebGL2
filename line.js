@@ -51,7 +51,7 @@ class Line {
         gl.uniform3fv(uObjectPos_loc, [0, 0, 0]);
 
         var hasNormal_loc = gl.getUniformLocation(shaderProgram, "u_hasNormals");
-        gl.uniform3fv(hasNormal_loc, false);
+        gl.uniform1i(hasNormal_loc, false);
 
         var vertex_buffer = this._getVbo(gl).position;
         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);

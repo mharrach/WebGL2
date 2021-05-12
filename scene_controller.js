@@ -1,11 +1,12 @@
 class SceneController {
-    constructor(canvasWidth, canvasHeight) {
+    constructor(canvasWidth, canvasHeight, camera) {
         this.modelViewMat = undefined;
         this.projMat = undefined;
         this.normalMat = undefined;
         this._tMatRotXZ = undefined;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+        this.camera = camera;
     }
     _getNormalMat() {
         if (!this.normalMat) {
@@ -40,7 +41,7 @@ class SceneController {
         var normalMat_loc = gl.getUniformLocation(shaderProgram, "normalMat");
         gl.uniformMatrix4fv(normalMat_loc, false, this.normalMat);
     }
-    setProjMat(gl, shaderProgram, range) {
+    setProjMatOrtho(gl, shaderProgram, range) {
         const w = this.canvasWidth;
         const h = this.canvasHeight;
         var aspectRatio = w / h;
@@ -53,6 +54,24 @@ class SceneController {
         this.projMat = glMatrix.mat4.ortho(this._getProjMat(), left, right, bottom, top, near, far);
         var uprojMat_loc = gl.getUniformLocation(shaderProgram, "projMat");
         gl.uniformMatrix4fv(uprojMat_loc, false, this.projMat);
+    }
+    setProjMatPersp(gl, shaderProgram) {
+        const w = this.canvasWidth;
+        const h = this.canvasHeight;
+        var aspectRatio = w / h;
+
+        // projection matrix.
+        this.projMat = glMatrix.mat4.perspective(this._getProjMat(), this.camera.fovyRad, aspectRatio, 0.01, 1000);
+        var uprojMat_loc = gl.getUniformLocation(shaderProgram, "projMat");
+        gl.uniformMatrix4fv(uprojMat_loc, false, this.projMat);
+
+        // modelView matrix.
+        var camDir = this.camera._getDirection();
+        var camUp = this.camera._getUp();
+
+        this.modelViewMat = glMatrix.mat4.lookAt(this.modelViewMat, this.camera.position, [camDir[0], camDir[1], camDir[2]], [camUp[0], camUp[1], camUp[2]]);
+        var umvMat_loc = gl.getUniformLocation(shaderProgram, "mvMat");
+        gl.uniformMatrix4fv(umvMat_loc, false, this.modelViewMat);
     }
     setRotationMat(rotationAxisChar, rotationAngleRad) {
         var rotationAxis;

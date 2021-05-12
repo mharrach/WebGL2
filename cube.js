@@ -119,11 +119,6 @@ class Cube {
     }
     render(gl, shaderProgram) {
 
-        for (let k = 0; k < this.pointsArray.length; k++) {
-            const element = this.pointsArray[k];
-            element.render(gl, shaderProgram);
-        }
-
         var coord = gl.getAttribLocation(shaderProgram, "positions");
         gl.enableVertexAttribArray(coord);
 
@@ -132,6 +127,9 @@ class Cube {
 
         var normal = gl.getAttribLocation(shaderProgram, "normals");
         gl.enableVertexAttribArray(normal);
+
+        var hasNormal_loc = gl.getUniformLocation(shaderProgram, "u_hasNormals");
+        gl.uniform1i(hasNormal_loc, true);
 
         var uObjectPos_loc = gl.getUniformLocation(shaderProgram, "objectPos");
         gl.uniform3fv(uObjectPos_loc, this.pos3d);

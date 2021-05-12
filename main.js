@@ -1,12 +1,13 @@
+//const { glMatrix } = require("./gl-matrix");
+
 var timeSpent = 0;
-var gl;
+var canvas = document.getElementById('glcanvas');
+var gl = canvas.getContext('experimental-webgl');
 
 function createShader() {
     /* Step3: Create and compile Shader programs */
-    var canvas = document.getElementById('glcanvas');
     canvas.width = window.innerWidth - 100;
     canvas.height = window.innerHeight - 100;
-    gl = canvas.getContext('experimental-webgl');
 
     // Vertex shader source code
     var vertCode =
@@ -105,7 +106,6 @@ function getWebglPos(event, context) {
 
 var that = this;
 var lastDownTarget;
-var canvas = document.getElementById('glcanvas');
 var x, y;
 var isDrawing = false;
 
@@ -130,11 +130,130 @@ canvas.addEventListener('mousemove', function(e) {
 canvas.addEventListener('mouseup', function(e) {
     isDrawing = false;
 }, false);*/
+var camera;
 
+function initProgram() {
+    var that = this;
+    if (!this.sceneControl) {
+        var camPos = [0, 0, 0];
+        var camDir = glMatrix.vec4.fromValues(0, 0, -1, 1);
+        var camUp = glMatrix.vec4.fromValues(0, 1, 0, 1);
+        var camFovyRad = Math.PI / 4;
+        camera = new Camera(camPos, camDir, camUp, camFovyRad);
+        this.sceneControl = new SceneController(canvas.width, canvas.height, camera);
+    }
+
+    canvas.addEventListener("wheel", event => {
+        var camDir = that.sceneControl.camera._getDirection();
+        const delta = -Math.sign(event.deltaY) / 50;
+        camera.position[0] += delta * camDir[0];
+        camera.position[1] += delta * camDir[1];
+        camera.position[2] += delta * camDir[2];
+    });
+
+    var isDown;
+    var currentX;
+    var currentY;
+    var initialX;
+    var initialY;
+    var camDirInit = camera._getDirection();
+    var camUpInit = camera._getUp();
+    var camRightInit = camera._getRight();
+    var startCameraDir = glMatrix.vec4.fromValues(camDirInit[0], camDirInit[1], camDirInit[2], 1);
+    var startCameraUp = glMatrix.vec4.fromValues(camUpInit[0], camUpInit[1], camUpInit[2], 1);
+    var startCameraRight = glMatrix.vec4.fromValues(camRightInit[0], camRightInit[1], camRightInit[2], 1);
+
+    canvas.addEventListener('mousedown', function(e) {
+        isDown = true;
+        initialX = e.clientX;
+        initialY = e.clientY;
+        var camera = that.sceneControl.camera;
+        var camDirInit = camera._getDirection();
+        var camUpInit = camera._getUp();
+        var camRightInit = camera._getRight();
+        startCameraDir = glMatrix.vec4.fromValues(camDirInit[0], camDirInit[1], camDirInit[2], 1);
+        startCameraUp = glMatrix.vec4.fromValues(camUpInit[0], camUpInit[1], camUpInit[2], 1);
+        startCameraRight = glMatrix.vec4.fromValues(camRightInit[0], camRightInit[1], camRightInit[2], 1);
+    }, false);
+
+    canvas.addEventListener('mousemove', function(e) {
+        if (isDown === true) {
+            currentX = e.clientX;
+            currentY = e.clientY;
+
+            var sensitivity = 0.1;
+
+            var deltaY = currentY - initialY;
+            var deltaX = currentX - initialX;
+
+            deltaX *= sensitivity;
+            deltaY *= sensitivity;
+
+            // Pitch
+            var camera = that.sceneControl.camera;
+            var camRight = camera._getRight();
+            var currCamDir = camera._getDirection();
+            var currCamUp = camera._getUp();
+            var xRotMat = glMatrix.mat4.create();
+
+            var yawRad = -deltaX * Math.PI / 180;
+            var pitchRad = -deltaY * Math.PI / 180;
+
+            var quatPitch = glMatrix.quat.create();
+            quatPitch = glMatrix.quat.setAxisAngle(quatPitch, camRight, pitchRad);
+
+            xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
+            //glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
+            //glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
+
+            // Heading
+            var planeNormal = glMatrix.vec3.fromValues(0, 0, 1);
+
+            var quatHeading = glMatrix.quat.create();
+            quatHeading = glMatrix.quat.setAxisAngle(quatHeading, planeNormal, yawRad);
+            var headingRotMat = glMatrix.mat4.create();
+            headingRotMat = glMatrix.mat4.fromQuat(headingRotMat, quatHeading);
+
+            var totalRotMat = glMatrix.mat4.create();
+            //glMatrix.mat4.multiply(totalRotMat, headingRotMat, xRotMat);
+            glMatrix.mat4.multiply(totalRotMat, xRotMat, headingRotMat);
+
+
+            glMatrix.vec4.transformMat4(currCamDir, startCameraDir, totalRotMat);
+            glMatrix.vec4.transformMat4(currCamUp, startCameraUp, totalRotMat);
+            glMatrix.vec4.transformMat4(camRight, startCameraRight, totalRotMat);
+
+            var hola = 0;
+        }
+    }, false);
+
+    canvas.addEventListener('mouseup', function(e) {
+        isDown = false;
+    }, false);
+
+    document.getElementById("test").addEventListener("click", function() {
+        var camera = that.sceneControl.camera;
+        var camRight = glMatrix.vec3.fromValues(1, 0, 0);
+        var currCamDir = camera._getDirection();
+        var currCamUp = camera._getUp();
+        var camPos = camera._getPosition();
+        camPos[0] = 0.0;
+        camPos[1] = 0.0;
+        camPos[2] = 1.0;
+        var pitchRad = 90 * Math.PI / 180;
+
+        var quatPitch = glMatrix.quat.create();
+        quatPitch = glMatrix.quat.setAxisAngle(quatPitch, camRight, pitchRad);
+
+        var xRotMat = glMatrix.mat4.create();
+        xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
+        glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
+        glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
+    });
+
+}
 
 function createShapes() {
-    var canvas = document.getElementById('glcanvas');
-    gl = canvas.getContext('experimental-webgl');
 
     if (!this.objectsContainer || this.objectsContainer.length === 0) {
         this.objectsContainer = [];
@@ -154,16 +273,16 @@ function createShapes() {
             //this.objectsContainer.push(this.cylinder);
         }
         if (!this.cube) {
-            this.cube = new Cube(4, [0, 0, 0]);
-            //this.objectsContainer.push(this.cube);
+            this.cube = new Cube(0.1, [0.2, 0.3, 0]);
+            this.objectsContainer.push(this.cube);
         }
         if (!this.partCylind) {
             this.partCylind = new PartialCylinder([0, 0, 0], 0.5, 1, 56, 90, 270);
             //this.objectsContainer.push(this.partCylind);
         }
         if (!this.cone) {
-            this.cone = new Cone([0, 0, 0], 1, 1.2, 24);
-            //this.objectsContainer.push(this.cone);
+            this.cone = new Cone([-0.2, -0.3, 0], 0.1, 0.3, 24);
+            this.objectsContainer.push(this.cone);
         }
         if (!this.partCone) {
             this.partCone = new PartialCone([0, 0, 0], 0.5, 1, 6, 90, 180);
@@ -223,11 +342,6 @@ function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, l
 
 function render(shaderProgram) {
     /* Step1: Prepare the canvas and get WebGL context */
-
-    var canvas = document.getElementById('glcanvas');
-    gl = canvas.getContext('experimental-webgl');
-    this.sceneControl = new SceneController(canvas.width, canvas.height);
-
     //********************************************************************/
     /* Step5: Drawing the required objects */
 
@@ -262,7 +376,7 @@ function render(shaderProgram) {
     mvMat = glMatrix.mat4.identity(mvMat); //identity??
 
     //Slider
-    var sliderZ = document.getElementById("rotValSliderZ");
+    /*var sliderZ = document.getElementById("rotValSliderZ");
     var outputZ = document.getElementById("resultZ");
     var angleRadZ = sliderZ.value * Math.PI / 180;
     sliderZ.oninput = function() {
@@ -284,6 +398,18 @@ function render(shaderProgram) {
 
     this.sceneControl.setModelViewMat(gl, shaderProgram, mvMat, mvMat, tMatRotXZ);
 
+    //Projection Matrix
+    var rangeSlider = document.getElementById("rangeSlider");
+    var rangeHtmlValue = document.getElementById("rangeValue");
+    var range = rangeSlider.value;
+    rangeSlider.oninput = function() {
+        rangeHtmlValue.innerHTML = this.value;
+        range = this.value;
+    };*/
+
+    //this.sceneControl.setProjMatOrtho(gl, shaderProgram, range);
+    this.sceneControl.setProjMatPersp(gl, shaderProgram);
+
     var normalMat = this.sceneControl._getNormalMat();
     var out = glMatrix.mat4.create();
     var out2 = glMatrix.mat4.create();
@@ -291,17 +417,6 @@ function render(shaderProgram) {
     normalMat = glMatrix.mat4.transpose(normalMat, mvmInv);
 
     this.sceneControl.setNormalMat(gl, shaderProgram);
-
-    // Projection Matrix
-    var rangeSlider = document.getElementById("rangeSlider");
-    var rangeHtmlValue = document.getElementById("rangeValue");
-    var range = rangeSlider.value;
-    rangeSlider.oninput = function() {
-        rangeHtmlValue.innerHTML = this.value;
-        range = this.value;
-    };
-
-    this.sceneControl.setProjMat(gl, shaderProgram, range);
 
     //gl.enable(gl.CULL_FACE);
     // Render objects
@@ -319,16 +434,15 @@ function renderLoop() {
     window.setTimeout(renderLoop, 1000 / 60);
 }
 
-function initWebGL(canvas) {
-    gl = canvas.getContext("experimental-webgl");
+function initWebGL() {
     if (!gl) {
         alert("Unable to initialize WebGL. Your browser may not support it.");
     }
 }
 
 function onLoad() {
-    var canvas = document.getElementById("glcanvas");
-    initWebGL(canvas);
+    initWebGL();
+    initProgram();
     if (gl) {
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);
