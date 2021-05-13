@@ -130,15 +130,16 @@ canvas.addEventListener('mousemove', function(e) {
 canvas.addEventListener('mouseup', function(e) {
     isDrawing = false;
 }, false);*/
+
 var camera;
 
 function initProgram() {
     var that = this;
     if (!this.sceneControl) {
-        var camPos = [0, 0, 0];
+        var camPos = [0.4, 0, 0.74];
         var camDir = glMatrix.vec4.fromValues(0, 0, -1, 1);
         var camUp = glMatrix.vec4.fromValues(0, 1, 0, 1);
-        var camFovyRad = Math.PI / 4;
+        var camFovyRad = Math.PI / 2;
         camera = new Camera(camPos, camDir, camUp, camFovyRad);
         this.sceneControl = new SceneController(canvas.width, canvas.height, camera);
     }
@@ -203,8 +204,6 @@ function initProgram() {
             quatPitch = glMatrix.quat.setAxisAngle(quatPitch, camRight, pitchRad);
 
             xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
-            //glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
-            //glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
 
             // Heading
             var planeNormal = glMatrix.vec3.fromValues(0, 0, 1);
@@ -215,7 +214,6 @@ function initProgram() {
             headingRotMat = glMatrix.mat4.fromQuat(headingRotMat, quatHeading);
 
             var totalRotMat = glMatrix.mat4.create();
-            //glMatrix.mat4.multiply(totalRotMat, headingRotMat, xRotMat);
             glMatrix.mat4.multiply(totalRotMat, xRotMat, headingRotMat);
 
 
@@ -223,7 +221,6 @@ function initProgram() {
             glMatrix.vec4.transformMat4(currCamUp, startCameraUp, totalRotMat);
             glMatrix.vec4.transformMat4(camRight, startCameraRight, totalRotMat);
 
-            var hola = 0;
         }
     }, false);
 
@@ -231,7 +228,37 @@ function initProgram() {
         isDown = false;
     }, false);
 
-    document.getElementById("test").addEventListener("click", function() {
+
+    window.addEventListener("keydown", function(event) {
+        if (event.defaultPrevented) {
+            return;
+        }
+        var deltaT = 0;
+        var camera = that.sceneControl.camera;
+        var camRight = camera._getRight();
+        switch (event.key) {
+            case "ArrowLeft":
+                deltaT = -0.1;
+                console.log("Left");
+                console.log(deltaT);
+
+                break;
+            case "ArrowRight":
+                deltaT = 0.1;
+                console.log("Right");
+                console.log(deltaT);
+
+                break;
+        }
+
+        camera.position[0] += deltaT * camRight[0];
+        camera.position[1] += deltaT * camRight[1];
+        camera.position[2] += deltaT * camRight[2];
+
+        event.preventDefault();
+    }, true);
+
+    /*document.getElementById("test").addEventListener("click", function() {
         var camera = that.sceneControl.camera;
         var camRight = glMatrix.vec3.fromValues(1, 0, 0);
         var currCamDir = camera._getDirection();
@@ -249,7 +276,7 @@ function initProgram() {
         xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
         glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
         glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
-    });
+    });*/
 
 }
 

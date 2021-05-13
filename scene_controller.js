@@ -68,8 +68,11 @@ class SceneController {
         // modelView matrix.
         var camDir = this.camera._getDirection();
         var camUp = this.camera._getUp();
-
-        this.modelViewMat = glMatrix.mat4.lookAt(this.modelViewMat, this.camera.position, [camDir[0], camDir[1], camDir[2]], [camUp[0], camUp[1], camUp[2]]);
+        var camPos = this.camera._getPosition();
+        var dist = 100;
+        var camTarget = [dist * camDir[0], dist * camDir[1], dist * camDir[2]];
+        var target = [camPos[0] + camTarget[0], camPos[1] + camTarget[1], camPos[2] + camTarget[2]];
+        this.modelViewMat = glMatrix.mat4.lookAt(this.modelViewMat, camPos, target, [camUp[0], camUp[1], camUp[2]]);
         var umvMat_loc = gl.getUniformLocation(shaderProgram, "mvMat");
         gl.uniformMatrix4fv(umvMat_loc, false, this.modelViewMat);
     }
