@@ -118,11 +118,6 @@ class Ground {
         gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
         gl.vertexAttribPointer(color, 4, gl.FLOAT, false, 0, 0);
 
-        //var normal_buffer = this._getVbo(gl).normal;
-        //gl.bindBuffer(gl.ARRAY_BUFFER, normal_buffer);
-        //gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
-
-
         gl.drawArrays(gl.LINES, 0, this.vertexCount);
 
     }

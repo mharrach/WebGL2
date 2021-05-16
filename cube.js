@@ -1,5 +1,5 @@
 class Cube {
-    constructor(dimension, pos3d, tMat) {
+    constructor(dimension, pos3d) {
         this.dimension = dimension;
         this.pos3d = pos3d;
         this.vbo = undefined;
@@ -7,7 +7,6 @@ class Cube {
         this.normalVbo = undefined;
         this.pointsArray = [];
         this.normalsArray = [];
-        this.tMat;
     }
     _getVbo(gl) {
         if (!this.vbo) {
@@ -15,6 +14,7 @@ class Cube {
             var l = this.dimension / 2;
             var vertices = [];
             var colors = [];
+            var normals = [];
 
             var frontLeftBottom = new Point(-l, -l, -l); //lfb
             var frontRightBottom = new Point(l, -l, -l); //rfb
@@ -25,9 +25,6 @@ class Cube {
             var backRightTop = new Point(l, l, l); //rbt
             var backLeftTop = new Point(-l, l, l); //lbt
 
-
-            //var pointsArray = [];
-            var normals = [];
             // front face.
             this.pointsArray.push(frontLeftBottom, frontRightBottom, frontLeftTop, frontLeftTop, frontRightBottom, frontRightTop);
             var normal1 = ThreeDLib.getNormalVect(frontLeftBottom, frontRightBottom, frontLeftTop);

@@ -1,8 +1,7 @@
-//const { glMatrix } = require("./gl-matrix");
-
 var timeSpent = 0;
 var canvas = document.getElementById('glcanvas');
 var gl = canvas.getContext('experimental-webgl');
+var shaderProgram = createShader();
 
 function createShader() {
     /* Step3: Create and compile Shader programs */
@@ -87,69 +86,23 @@ function createShader() {
     return shaderProgram;
 }
 
-var shaderProgram = createShader();
-
-function getWebglPos(event, context) {
-    var clientX = event.clientX;
-    var clientY = event.clientY;
-
-    var midX = context.width / 2,
-        midY = context.height / 2;
-
-    var rect = event.target.getBoundingClientRect();
-
-    x = ((clientX - rect.left) - midX) / midX;
-    y = (midY - (clientY - rect.top)) / midY;
-
-    return { x: x, y: y };
-}
-
-var that = this;
-var lastDownTarget;
-var x, y;
-var isDrawing = false;
-
-/*canvas.addEventListener('mousedown', function(e) {
-    isDrawing = true;
-    // Convert mouse position (window coordinates) to WebGL canvas coordinates
-    x = getWebglPos(e, canvas).x;
-    y = getWebglPos(e, canvas).y;
-
-    if (!that.star) {
-        that.star = new Star([0, 0, 0], 0.2, 0.4, 5, false, [x, y, 0]);
-        that.objectsContainer.push(that.star);
-    }
-}, false);
-
-canvas.addEventListener('mousemove', function(e) {
-    if (isDrawing === true) {
-        that.star.pos3d = [getWebglPos(e, canvas).x, getWebglPos(e, canvas).y, 0];
-    }
-}, false);
-
-canvas.addEventListener('mouseup', function(e) {
-    isDrawing = false;
-}, false);*/
-
-var camera;
-
 function initProgram() {
     var that = this;
     if (!this.sceneControl) {
-        var camPos = [0.4, 0, 0.74];
+        var camPos = [0, 0, 0.55];
         var camDir = glMatrix.vec4.fromValues(0, 0, -1, 1);
         var camUp = glMatrix.vec4.fromValues(0, 1, 0, 1);
         var camFovyRad = Math.PI / 2;
-        camera = new Camera(camPos, camDir, camUp, camFovyRad);
-        this.sceneControl = new SceneController(canvas.width, canvas.height, camera);
+        var cameraInit = new Camera(camPos, camDir, camUp, camFovyRad);
+        this.sceneControl = new SceneController(canvas.width, canvas.height, cameraInit);
     }
 
     canvas.addEventListener("wheel", event => {
-        var camDir = that.sceneControl.camera._getDirection();
+        var camDirection = that.sceneControl.camera._getDirection();
         const delta = -Math.sign(event.deltaY) / 50;
-        camera.position[0] += delta * camDir[0];
-        camera.position[1] += delta * camDir[1];
-        camera.position[2] += delta * camDir[2];
+        camera.position[0] += delta * camDirection[0];
+        camera.position[1] += delta * camDirection[1];
+        camera.position[2] += delta * camDirection[2];
     });
 
     var isDown;
@@ -157,21 +110,22 @@ function initProgram() {
     var currentY;
     var initialX;
     var initialY;
-    var camDirInit = camera._getDirection();
-    var camUpInit = camera._getUp();
-    var camRightInit = camera._getRight();
-    var startCameraDir = glMatrix.vec4.fromValues(camDirInit[0], camDirInit[1], camDirInit[2], 1);
-    var startCameraUp = glMatrix.vec4.fromValues(camUpInit[0], camUpInit[1], camUpInit[2], 1);
-    var startCameraRight = glMatrix.vec4.fromValues(camRightInit[0], camRightInit[1], camRightInit[2], 1);
+    var camera;
+    var camDirInit;
+    var camUpInit;
+    var camRightInit;
+    var startCameraDir;
+    var startCameraUp;
+    var startCameraRight;
 
     canvas.addEventListener('mousedown', function(e) {
         isDown = true;
         initialX = e.clientX;
         initialY = e.clientY;
-        var camera = that.sceneControl.camera;
-        var camDirInit = camera._getDirection();
-        var camUpInit = camera._getUp();
-        var camRightInit = camera._getRight();
+        camera = that.sceneControl.camera;
+        camDirInit = camera._getDirection();
+        camUpInit = camera._getUp();
+        camRightInit = camera._getRight();
         startCameraDir = glMatrix.vec4.fromValues(camDirInit[0], camDirInit[1], camDirInit[2], 1);
         startCameraUp = glMatrix.vec4.fromValues(camUpInit[0], camUpInit[1], camUpInit[2], 1);
         startCameraRight = glMatrix.vec4.fromValues(camRightInit[0], camRightInit[1], camRightInit[2], 1);
@@ -191,7 +145,7 @@ function initProgram() {
             deltaY *= sensitivity;
 
             // Pitch
-            var camera = that.sceneControl.camera;
+            camera = that.sceneControl.camera;
             var camRight = camera._getRight();
             var currCamDir = camera._getDirection();
             var currCamUp = camera._getUp();
@@ -216,7 +170,6 @@ function initProgram() {
             var totalRotMat = glMatrix.mat4.create();
             glMatrix.mat4.multiply(totalRotMat, xRotMat, headingRotMat);
 
-
             glMatrix.vec4.transformMat4(currCamDir, startCameraDir, totalRotMat);
             glMatrix.vec4.transformMat4(currCamUp, startCameraUp, totalRotMat);
             glMatrix.vec4.transformMat4(camRight, startCameraRight, totalRotMat);
@@ -234,20 +187,14 @@ function initProgram() {
             return;
         }
         var deltaT = 0;
-        var camera = that.sceneControl.camera;
+        camera = that.sceneControl.camera;
         var camRight = camera._getRight();
         switch (event.key) {
             case "ArrowLeft":
                 deltaT = -0.1;
-                console.log("Left");
-                console.log(deltaT);
-
                 break;
             case "ArrowRight":
                 deltaT = 0.1;
-                console.log("Right");
-                console.log(deltaT);
-
                 break;
         }
 
@@ -258,7 +205,7 @@ function initProgram() {
         event.preventDefault();
     }, true);
 
-    /*document.getElementById("test").addEventListener("click", function() {
+    document.getElementById("test").addEventListener("click", function() {
         var camera = that.sceneControl.camera;
         var camRight = glMatrix.vec3.fromValues(1, 0, 0);
         var currCamDir = camera._getDirection();
@@ -276,96 +223,24 @@ function initProgram() {
         xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
         glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
         glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
-    });*/
+    });
 
 }
 
 function createShapes() {
 
-    if (!this.objectsContainer || this.objectsContainer.length === 0) {
-        this.objectsContainer = [];
-        /* Step2: Define the geometry and store it in buffer objects */
+    if (!this.objManager) {
+        this.objManager = new ObjectManager();
 
-        //this.spiral = new Spiral([0.3, -0.3, 0], 0.001, 1.75);
-        if (!this.line1) {
-            this.line1 = new Line(-0.95, 0, 0, 0.95, 0, 0);
-            //this.objectsContainer.push(this.line1);
-        }
-        if (!this.line2) {
-            this.line2 = new Line(0, -0.95, 0, 0, 0.95, 0);
-            //this.objectsContainer.push(this.line2);
-        }
-        if (!this.cylinder) {
-            this.cylinder = new Cylinder([0, 0, 0], 0.6, 1, 24);
-            //this.objectsContainer.push(this.cylinder);
-        }
-        if (!this.cube) {
-            this.cube = new Cube(0.1, [0.2, 0.3, 0]);
-            this.objectsContainer.push(this.cube);
-        }
-        if (!this.partCylind) {
-            this.partCylind = new PartialCylinder([0, 0, 0], 0.5, 1, 56, 90, 270);
-            //this.objectsContainer.push(this.partCylind);
-        }
-        if (!this.cone) {
-            this.cone = new Cone([-0.2, -0.3, 0], 0.1, 0.3, 24);
-            this.objectsContainer.push(this.cone);
-        }
-        if (!this.partCone) {
-            this.partCone = new PartialCone([0, 0, 0], 0.5, 1, 6, 90, 180);
-            //this.objectsContainer.push(this.partCone);
-        }
-        if (!this.house) {
-            this.house = new House([0, 0, 0], 0.8, 0.3, 0.6, 0.8);
-            //this.objectsContainer.push(this.house);
-        }
-        if (!this.hollowCylind) {
-            this.hollowCylind = new HollowCylinder([0, 0, 0], 0.5, 0.8, 2, 12);
-            //this.objectsContainer.push(this.hollowCylind);
-        }
-        if (!this.partHolCylind) {
-            this.partHolCylind = new PartialHollowCylinder([0, 0, 0], 0.5, 0.8, 2, 12, 45, 180);
-            //this.objectsContainer.push(this.partHolCylind);
-        }
-        if (!this.carpet) {
-            this.carpet = new Carpet([0, 0, 0], 1, 1, 100, 100);
-            //this.objectsContainer.push(this.carpet);
-        }
-        if (!this.graph) {
-            this.graph = new SinusGraph(20);
-            //this.objectsContainer.push(this.graph);
-        }
-        if (!this.ground) {
-            this.ground = new Ground([0, 0, 0], 1, 1);
-            this.objectsContainer.push(this.ground);
-        }
+        var cubeOptions = { dimension: 0.1, position: [0.1, 0.5, 0.0] };
+        this.objManager.createObject("cube", cubeOptions);
+
+        var groundOptions = { width: 1, length: 1, position: [0, 0, 0] };
+        this.objManager.createObject("ground", groundOptions);
     }
-    return this.objectsContainer;
+
+    return this.objManager;
 }
-
-function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
-
-    var denominator, a, b, numerator1, numerator2, result = {
-        x: null,
-        y: null
-    };
-    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
-    if (denominator == 0) {
-        return result;
-    }
-    a = line1StartY - line2StartY;
-    b = line1StartX - line2StartX;
-    numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
-    numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
-    a = numerator1 / denominator;
-    b = numerator2 / denominator;
-
-    result.x = line1StartX + (a * (line1EndX - line1StartX));
-    result.y = line1StartY + (a * (line1EndY - line1StartY));
-
-    return result;
-};
-
 
 function render(shaderProgram) {
     /* Step1: Prepare the canvas and get WebGL context */
@@ -398,61 +273,45 @@ function render(shaderProgram) {
     gl.uniformMatrix4fv(utMatMouna_loc, false, tMatScal);
 
     // Rotation matrix
-    // this.mvMat = glMatrix.mat4.create(); //identity??
     var mvMat = this.sceneControl._getModelViewMat();
-    mvMat = glMatrix.mat4.identity(mvMat); //identity??
+    mvMat = glMatrix.mat4.identity(mvMat);
 
-    //Slider
-    /*var sliderZ = document.getElementById("rotValSliderZ");
-    var outputZ = document.getElementById("resultZ");
-    var angleRadZ = sliderZ.value * Math.PI / 180;
-    sliderZ.oninput = function() {
-        outputZ.innerHTML = this.value;
-        angleRadZ = parseInt(this.value) * Math.PI / 180;
-    };
-
-    var sliderX = document.getElementById("rotValSliderX");
-    var outputX = document.getElementById("resultX");
-    var angleRadX = sliderX.value * Math.PI / 180;
-    sliderX.oninput = function() {
-        outputX.innerHTML = this.value;
-        angleRadX = parseInt(this.value) * Math.PI / 180;
-    };
-
-    var tMatRotZ = this.sceneControl.setRotationMat("z", angleRadZ);
-    var tMatRotX = this.sceneControl.setRotationMat("x", angleRadX);
-    var tMatRotXZ = this.sceneControl.setRotationMatXZ(tMatRotX, tMatRotZ);
-
-    this.sceneControl.setModelViewMat(gl, shaderProgram, mvMat, mvMat, tMatRotXZ);
-
-    //Projection Matrix
-    var rangeSlider = document.getElementById("rangeSlider");
-    var rangeHtmlValue = document.getElementById("rangeValue");
-    var range = rangeSlider.value;
-    rangeSlider.oninput = function() {
-        rangeHtmlValue.innerHTML = this.value;
-        range = this.value;
-    };*/
-
-    //this.sceneControl.setProjMatOrtho(gl, shaderProgram, range);
     this.sceneControl.setProjMatPersp(gl, shaderProgram);
 
     var normalMat = this.sceneControl._getNormalMat();
     var out = glMatrix.mat4.create();
-    var out2 = glMatrix.mat4.create();
     var mvmInv = glMatrix.mat4.invert(out, this.sceneControl._getModelViewMat());
     normalMat = glMatrix.mat4.transpose(normalMat, mvmInv);
 
     this.sceneControl.setNormalMat(gl, shaderProgram);
 
-    //gl.enable(gl.CULL_FACE);
     // Render objects
-    this.objectsContainer = createShapes();
-    var objectsCount = this.objectsContainer.length;
-    for (var i = 0; i < objectsCount; i++) {
-        var object = this.objectsContainer[i];
-        object.render(gl, shaderProgram);
+    var objectsManager = createShapes();
+    var objects = objectsManager.objectsArray;
+    for (let index = 0; index < objects.length; index++) {
+        //if the object exists
+        if (objects[index]) {
+            objects[index].render(gl, shaderProgram);
+        }
     }
+
+    // Animate the cube
+    var test = true;
+    var currentTime = (new Date()).getTime();
+    var transAmount = 0.1;
+    var cube = objectsManager._getObject(0);
+    if (this.lastUpdateTime > 0.0) {
+        var delta = currentTime - lastUpdateTime;
+        var amount = (transAmount * delta) / 1000.0;
+        if (cube && cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
+            cube.pos3d[1] -= amount;
+        } else {
+            test = false;
+            objectsManager.deleteObject(0);
+        }
+    }
+    // Update time
+    this.lastUpdateTime = currentTime;
 
 }
 
@@ -468,6 +327,7 @@ function initWebGL() {
 }
 
 function onLoad() {
+    this.lastUpdateTime = 0.0;
     initWebGL();
     initProgram();
     if (gl) {
