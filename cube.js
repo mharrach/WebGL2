@@ -17,6 +17,15 @@ class Cube {
     addPositionZ(velocityXdeltaT) {
         this.pos3d[2] += velocityXdeltaT;
     }
+    setPositionX(newPositionX) {
+        this.pos3d[0] = newPositionX;
+    }
+    setPositionY(newPositionY) {
+        this.pos3d[1] = newPositionY;
+    }
+    setPositionZ(newPositionZ) {
+        this.pos3d[2] = newPositionZ;
+    }
     _getVbo(gl) {
         if (!this.vbo) {
 

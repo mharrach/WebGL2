@@ -2,6 +2,10 @@ var ThreeDLib = function() {
 
 }
 
+ThreeDLib.random = function(min, max) {
+    return min + Math.random() * (max - min);
+}
+
 ThreeDLib.getCrossProduct = function(vectorA, vectorB) {
     var a = vectorA.x;
     var b = vectorA.y;

@@ -1,4 +1,4 @@
-var timeSpent = 0;
+var lastUpdateTime = 0;
 var canvas = document.getElementById('glcanvas');
 var gl = canvas.getContext('experimental-webgl');
 var shaderProgram = createShader();
@@ -89,16 +89,17 @@ function createShader() {
 function initProgram() {
     var that = this;
     if (!this.sceneControl) {
-        var camPos = [0, 0, 0.55];
-        var camDir = glMatrix.vec4.fromValues(0, 0, -1, 1);
-        var camUp = glMatrix.vec4.fromValues(0, 1, 0, 1);
+        var camPos = [0, -0.5, 0.1];
+        var camDir = glMatrix.vec4.fromValues(0, 1, 0, 1);
+        var camUp = glMatrix.vec4.fromValues(0, 0, 1, 1);
         var camFovyRad = Math.PI / 2;
         var cameraInit = new Camera(camPos, camDir, camUp, camFovyRad);
         this.sceneControl = new SceneController(canvas.width, canvas.height, cameraInit);
     }
 
     canvas.addEventListener("wheel", event => {
-        var camDirection = that.sceneControl.camera._getDirection();
+        var camera = that.sceneControl.camera;
+        var camDirection = camera._getDirection();
         const delta = -Math.sign(event.deltaY) / 50;
         camera.position[0] += delta * camDirection[0];
         camera.position[1] += delta * camDirection[1];
@@ -228,17 +229,21 @@ function initProgram() {
 }
 
 function createShapes() {
-
+    var n;
     if (!this.objManager) {
+        n = 0;
         this.objManager = new ObjectManager();
-
-        var cubeOptions = { dimension: 0.1, position: [0.1, 0.5, 0.0] };
-        this.objManager.createObject("cube", cubeOptions);
 
         var groundOptions = { width: 1, length: 1, position: [0, 0, 0] };
         this.objManager.createObject("ground", groundOptions);
     }
-
+    while (n <= 5) {
+        var randomX = ThreeDLib.random(-0.5, 0.5);
+        var randomY = ThreeDLib.random(-0.5, 0.5);
+        var cubeOptions = { dimension: 0.1, position: [randomX, randomY, 0.0] };
+        this.objManager.createObject("cube", cubeOptions);
+        n++;
+    }
     return this.objManager;
 }
 
@@ -298,20 +303,23 @@ function render(shaderProgram) {
     // Animate the cube
     var currentTime = (new Date()).getTime();
     var gameControls = new GameControls(0.1);
-    var cube = objectsManager._getObject(0);
-    if (cube instanceof Cube && this.lastUpdateTime > 0.0) {
-        var deltaTimeMilisec = currentTime - lastUpdateTime;
-        var velocity = gameControls._getVelocity();
-        var deltaY = velocity * deltaTimeMilisec / 1000.0;
-        if (cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
-            //cube.pos3d[1] -= deltaY;
-            cube.addPositionY(-deltaY);
-        } else {
-            objectsManager.deleteObject(0);
+    var deltaTimeMilisec = currentTime - lastUpdateTime;
+    var velocity = gameControls._getVelocity();
+    var deltaY = velocity * deltaTimeMilisec / 1000.0;
+    var objectsCount = objects.length;
+    for (var i = 0; i < objectsCount; i++) {
+        var cube = objectsManager._getObject(i);
+        if (cube instanceof Cube && lastUpdateTime > 0.0) {
+            if (cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
+                cube.addPositionY(-deltaY);
+            } else {
+                //objectsManager.deleteObject(i);
+                cube.setPositionY(0.5);
+            }
         }
     }
     // Update time
-    this.lastUpdateTime = currentTime;
+    lastUpdateTime = currentTime;
 
 }
 
@@ -327,7 +335,7 @@ function initWebGL() {
 }
 
 function onLoad() {
-    this.lastUpdateTime = 0.0;
+    //this.lastUpdateTime = 0.0;
     initWebGL();
     initProgram();
     if (gl) {
