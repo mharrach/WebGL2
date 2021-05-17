@@ -296,17 +296,17 @@ function render(shaderProgram) {
     }
 
     // Animate the cube
-    var test = true;
     var currentTime = (new Date()).getTime();
-    var transAmount = 0.1;
+    var gameControls = new GameControls(0.1);
     var cube = objectsManager._getObject(0);
-    if (this.lastUpdateTime > 0.0) {
-        var delta = currentTime - lastUpdateTime;
-        var amount = (transAmount * delta) / 1000.0;
-        if (cube && cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
-            cube.pos3d[1] -= amount;
+    if (cube instanceof Cube && this.lastUpdateTime > 0.0) {
+        var deltaTimeMilisec = currentTime - lastUpdateTime;
+        var velocity = gameControls._getVelocity();
+        var deltaY = velocity * deltaTimeMilisec / 1000.0;
+        if (cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
+            //cube.pos3d[1] -= deltaY;
+            cube.addPositionY(-deltaY);
         } else {
-            test = false;
             objectsManager.deleteObject(0);
         }
     }

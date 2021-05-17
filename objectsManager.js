@@ -28,5 +28,6 @@ class ObjectManager {
     }
     deleteObject(index) {
         delete this.objectsArray[index];
+        this.objectsArray.splice(index, 1);
     }
 }

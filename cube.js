@@ -8,6 +8,15 @@ class Cube {
         this.pointsArray = [];
         this.normalsArray = [];
     }
+    addPositionX(velocityXdeltaT) {
+        this.pos3d[0] += velocityXdeltaT;
+    }
+    addPositionY(velocityXdeltaT) {
+        this.pos3d[1] += velocityXdeltaT;
+    }
+    addPositionZ(velocityXdeltaT) {
+        this.pos3d[2] += velocityXdeltaT;
+    }
     _getVbo(gl) {
         if (!this.vbo) {
 
