@@ -1,9 +1,10 @@
 class Cylinder {
-    constructor(pos3d, radius, height, nb_sections) {
+    constructor(pos3d, radius, height, nb_sections, rgb) {
         this.pos3d = pos3d;
         this.radius = radius;
         this.height = height;
         this.nb_sections = nb_sections;
+        this.rgb = rgb;
         this.vbo = undefined;
         this.colorVbo = undefined;
         this.normalVbo = undefined;
@@ -57,9 +58,15 @@ class Cylinder {
             }
 
             var triangles = [];
-            var r = 1.0;
-            var g = 0.5;
-            var b = 0.25;
+            var r = this.rgb[0];
+            var g = this.rgb[1];
+            var b = this.rgb[2];
+            /*
+                var r = 1.0;
+                var g = 0.5;
+                var b = 0.25;
+            */
+
             for (let n = 0; n < pts; n++) {
                 var currTopPoint;
                 var currBottomPoint;
@@ -145,6 +152,24 @@ class Cylinder {
 
         return { position: this.vbo, color: this.colorsVbo, normal: this.normalVbo };
     }
+    setColorsVbo(gl, newColors) {
+        gl.deleteBuffer(this.colorVbo);
+
+        var pts = this.nb_sections;
+        var colors = [];
+        for (let i = 0; i < pts; i++) {
+            for (let j = 0; j < 12; j++) {
+                colors.push(newColors[0], newColors[1], newColors[2], 1);
+            }
+        }
+
+        var color_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        this.colorsVbo = color_buffer;
+    }
     render(gl, shaderProgram) {
 
         var coord = gl.getAttribLocation(shaderProgram, "positions");
@@ -155,6 +180,9 @@ class Cylinder {
 
         var normal = gl.getAttribLocation(shaderProgram, "normals");
         gl.enableVertexAttribArray(normal);
+
+        var hasNormal_loc = gl.getUniformLocation(shaderProgram, "u_hasNormals");
+        gl.uniform1i(hasNormal_loc, true);
 
         var uObjectPos_loc = gl.getUniformLocation(shaderProgram, "objectPos");
         gl.uniform3fv(uObjectPos_loc, this.pos3d);

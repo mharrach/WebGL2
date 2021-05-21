@@ -6,6 +6,10 @@ ThreeDLib.random = function(min, max) {
     return min + Math.random() * (max - min);
 }
 
+ThreeDLib.distance3D = function(x1, y1, z1, x2, y2, z2) {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2));
+}
+
 ThreeDLib.getCrossProduct = function(vectorA, vectorB) {
     var a = vectorA.x;
     var b = vectorA.y;

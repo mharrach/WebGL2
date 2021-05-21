@@ -7,6 +7,12 @@ class SceneController {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.camera = camera;
+        var position = [0, 0, 0];
+        var direction = glMatrix.vec4.fromValues(0, 0, 0, 1);
+        var up = glMatrix.vec4.fromValues(0, 0, 0, 1);
+        var fovyRad = 0;
+        this.startCamera = new Camera(position, direction, up, fovyRad);
+        //this.startCamera.copyFromCamera(this.camera); //optional
     }
     _getNormalMat() {
         if (!this.normalMat) {
@@ -66,9 +72,9 @@ class SceneController {
         gl.uniformMatrix4fv(uprojMat_loc, false, this.projMat);
 
         // modelView matrix.
-        var camDir = this.camera._getDirection();
-        var camUp = this.camera._getUp();
-        var camPos = this.camera._getPosition();
+        var camDir = this.camera.getDirection();
+        var camUp = this.camera.getUp();
+        var camPos = this.camera.getPosition();
         var dist = 100; // if changed the outcome ramins the same
         var camTarget = [dist * camDir[0], dist * camDir[1], dist * camDir[2]];
         var target = [camPos[0] + camTarget[0], camPos[1] + camTarget[1], camPos[2] + camTarget[2]];

@@ -89,21 +89,23 @@ function createShader() {
 function initProgram() {
     var that = this;
     if (!this.sceneControl) {
-        var camPos = [0, -0.5, 0.1];
+        var camPos = [0, -0.6, 0.6];
         var camDir = glMatrix.vec4.fromValues(0, 1, 0, 1);
         var camUp = glMatrix.vec4.fromValues(0, 0, 1, 1);
         var camFovyRad = Math.PI / 2;
         var cameraInit = new Camera(camPos, camDir, camUp, camFovyRad);
         this.sceneControl = new SceneController(canvas.width, canvas.height, cameraInit);
+
+        var pitchRadInit = -45 * Math.PI / 180;
+        this.sceneControl.camera.setRotation(0, pitchRadInit, 0);
     }
 
     canvas.addEventListener("wheel", event => {
-        var camera = that.sceneControl.camera;
-        var camDirection = camera._getDirection();
+        var camDirection = that.sceneControl.camera.getDirection();
         const delta = -Math.sign(event.deltaY) / 50;
-        camera.position[0] += delta * camDirection[0];
-        camera.position[1] += delta * camDirection[1];
-        camera.position[2] += delta * camDirection[2];
+        that.sceneControl.camera.position[0] += delta * camDirection[0];
+        that.sceneControl.camera.position[1] += delta * camDirection[1];
+        that.sceneControl.camera.position[2] += delta * camDirection[2];
     });
 
     var isDown;
@@ -111,25 +113,13 @@ function initProgram() {
     var currentY;
     var initialX;
     var initialY;
-    var camera;
-    var camDirInit;
-    var camUpInit;
-    var camRightInit;
-    var startCameraDir;
-    var startCameraUp;
-    var startCameraRight;
 
     canvas.addEventListener('mousedown', function(e) {
         isDown = true;
         initialX = e.clientX;
         initialY = e.clientY;
-        camera = that.sceneControl.camera;
-        camDirInit = camera._getDirection();
-        camUpInit = camera._getUp();
-        camRightInit = camera._getRight();
-        startCameraDir = glMatrix.vec4.fromValues(camDirInit[0], camDirInit[1], camDirInit[2], 1);
-        startCameraUp = glMatrix.vec4.fromValues(camUpInit[0], camUpInit[1], camUpInit[2], 1);
-        startCameraRight = glMatrix.vec4.fromValues(camRightInit[0], camRightInit[1], camRightInit[2], 1);
+        var startCamera = that.sceneControl.startCamera;
+        startCamera.copyFromCamera(that.sceneControl.camera);
     }, false);
 
     canvas.addEventListener('mousemove', function(e) {
@@ -146,35 +136,14 @@ function initProgram() {
             deltaY *= sensitivity;
 
             // Pitch
-            camera = that.sceneControl.camera;
-            var camRight = camera._getRight();
-            var currCamDir = camera._getDirection();
-            var currCamUp = camera._getUp();
-            var xRotMat = glMatrix.mat4.create();
-
-            var yawRad = -deltaX * Math.PI / 180;
             var pitchRad = -deltaY * Math.PI / 180;
-
-            var quatPitch = glMatrix.quat.create();
-            quatPitch = glMatrix.quat.setAxisAngle(quatPitch, camRight, pitchRad);
-
-            xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
-
             // Heading
-            var planeNormal = glMatrix.vec3.fromValues(0, 0, 1);
+            var headingRad = -deltaX * Math.PI / 180;
+            // Apply rotation
+            var camera = that.sceneControl.camera;
+            camera.copyFromCamera(that.sceneControl.startCamera);
 
-            var quatHeading = glMatrix.quat.create();
-            quatHeading = glMatrix.quat.setAxisAngle(quatHeading, planeNormal, yawRad);
-            var headingRotMat = glMatrix.mat4.create();
-            headingRotMat = glMatrix.mat4.fromQuat(headingRotMat, quatHeading);
-
-            var totalRotMat = glMatrix.mat4.create();
-            glMatrix.mat4.multiply(totalRotMat, xRotMat, headingRotMat);
-
-            glMatrix.vec4.transformMat4(currCamDir, startCameraDir, totalRotMat);
-            glMatrix.vec4.transformMat4(currCamUp, startCameraUp, totalRotMat);
-            glMatrix.vec4.transformMat4(camRight, startCameraRight, totalRotMat);
-
+            camera.setRotation(headingRad, pitchRad, 0);
         }
     }, false);
 
@@ -184,12 +153,12 @@ function initProgram() {
 
 
     window.addEventListener("keydown", function(event) {
-        if (event.defaultPrevented) {
+        /*if (event.defaultPrevented) {
             return;
         }
         var deltaT = 0;
-        camera = that.sceneControl.camera;
-        var camRight = camera._getRight();
+        var camera = that.sceneControl.camera;
+        var camRight = camera.getRight();
         switch (event.key) {
             case "ArrowLeft":
                 deltaT = -0.1;
@@ -201,30 +170,25 @@ function initProgram() {
 
         camera.position[0] += deltaT * camRight[0];
         camera.position[1] += deltaT * camRight[1];
-        camera.position[2] += deltaT * camRight[2];
+        camera.position[2] += deltaT * camRight[2];*/
+
+        if (event.defaultPrevented) {
+            return;
+        }
+        var deltaT = 0;
+        var cylinder = that.objManager._getObject(1);
+        switch (event.key) {
+            case "ArrowLeft":
+                deltaT = -0.01;
+                break;
+            case "ArrowRight":
+                deltaT = 0.01;
+                break;
+        }
+        cylinder.pos3d[0] += deltaT;
 
         event.preventDefault();
     }, true);
-
-    document.getElementById("test").addEventListener("click", function() {
-        var camera = that.sceneControl.camera;
-        var camRight = glMatrix.vec3.fromValues(1, 0, 0);
-        var currCamDir = camera._getDirection();
-        var currCamUp = camera._getUp();
-        var camPos = camera._getPosition();
-        camPos[0] = 0.0;
-        camPos[1] = 0.0;
-        camPos[2] = 1.0;
-        var pitchRad = 90 * Math.PI / 180;
-
-        var quatPitch = glMatrix.quat.create();
-        quatPitch = glMatrix.quat.setAxisAngle(quatPitch, camRight, pitchRad);
-
-        var xRotMat = glMatrix.mat4.create();
-        xRotMat = glMatrix.mat4.fromQuat(xRotMat, quatPitch);
-        glMatrix.vec4.transformMat4(currCamDir, startCameraDir, xRotMat);
-        glMatrix.vec4.transformMat4(currCamUp, startCameraUp, xRotMat);
-    });
 
 }
 
@@ -236,11 +200,14 @@ function createShapes() {
 
         var groundOptions = { width: 1, length: 1, position: [0, 0, 0] };
         this.objManager.createObject("ground", groundOptions);
+
+        var cylinderOptions = { position: [0, -0.5, 0], radius: 0.05, height: 0.1, nbSections: 12, rgb: [0.1, 0.2, 0.3] };
+        this.objManager.createObject("cylinder", cylinderOptions);
     }
-    while (n <= 5) {
+    while (n <= 6) {
         var randomX = ThreeDLib.random(-0.5, 0.5);
         var randomY = ThreeDLib.random(-0.5, 0.5);
-        var cubeOptions = { dimension: 0.1, position: [randomX, randomY, 0.0] };
+        var cubeOptions = { dimension: 0.05, position: [randomX, randomY, 0.0] };
         this.objManager.createObject("cube", cubeOptions);
         n++;
     }
@@ -300,21 +267,32 @@ function render(shaderProgram) {
         }
     }
 
-    // Animate the cube
+    // Cube animation
     var currentTime = (new Date()).getTime();
     var gameControls = new GameControls(0.1);
     var deltaTimeMilisec = currentTime - lastUpdateTime;
     var velocity = gameControls._getVelocity();
     var deltaY = velocity * deltaTimeMilisec / 1000.0;
     var objectsCount = objects.length;
+    //var cameraPos = this.sceneControl.camera.position;
+    //var cameraBoundingSphereRadius = 0.1;
+    var cylinder = this.objManager._getObject(1);
+    var cylinderRadius = cylinder.radius;
     for (var i = 0; i < objectsCount; i++) {
         var cube = objectsManager._getObject(i);
+        var cubeBoudingSphereRadius = cube.dimension / Math.sqrt(2);
         if (cube instanceof Cube && lastUpdateTime > 0.0) {
             if (cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
                 cube.addPositionY(-deltaY);
+                // test collision
+                var distance = ThreeDLib.distance3D(cylinder.pos3d[0], cylinder.pos3d[1], cylinder.pos3d[2], cube.pos3d[0], cube.pos3d[1], cube.pos3d[2]);
+                if (distance <= (cylinderRadius + cubeBoudingSphereRadius)) {
+                    console.info("collision");
+                    cylinder.setColorsVbo(gl, [1, 0, 0]);
+                }
             } else {
-                //objectsManager.deleteObject(i);
                 cube.setPositionY(0.5);
+                cylinder.setColorsVbo(gl, [0.1, 0.2, 0.3]);
             }
         }
     }

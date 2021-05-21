@@ -19,6 +19,16 @@ class ObjectManager {
                 this.objectsArray.push(ground);
                 return ground;
 
+            case "cylinder":
+                var position = options.position;
+                var radius = options.radius;
+                var height = options.height;
+                var nbSections = options.nbSections;
+                var rgb = options.rgb;
+                var cylinder = new Cylinder(position, radius, height, nbSections, rgb);
+                this.objectsArray.push(cylinder);
+                return cylinder;
+
             default:
                 break;
         }
