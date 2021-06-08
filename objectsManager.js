@@ -7,7 +7,8 @@ class ObjectManager {
             case "cube":
                 var dimension = options.dimension;
                 var position = options.position;
-                var cube = new Cube(dimension, position);
+                var direction = options.direction;
+                var cube = new Cube(dimension, position, direction);
                 this.objectsArray.push(cube);
                 return cube;
 
@@ -29,11 +30,21 @@ class ObjectManager {
                 this.objectsArray.push(cylinder);
                 return cylinder;
 
+            case "arrow":
+                var position = options.position;
+                var height = options.height;
+                var width = options.width;
+                var length = options.length;
+                var arrowLen = options.arrowLen;
+                var arrow = new Arrow(position, height, width, length, arrowLen);
+                this.objectsArray.push(arrow);
+                return arrow;
+
             default:
                 break;
         }
     }
-    _getObject(index) {
+    getObject(index) {
         return this.objectsArray[index];
     }
     deleteObject(index) {

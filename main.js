@@ -1,4 +1,3 @@
-var lastUpdateTime = 0;
 var canvas = document.getElementById('glcanvas');
 var gl = canvas.getContext('experimental-webgl');
 var shaderProgram = createShader();
@@ -86,7 +85,7 @@ function createShader() {
     return shaderProgram;
 }
 
-function initProgram() {
+function initMyProgram() {
     var that = this;
     if (!this.sceneControl) {
         var camPos = [0, -0.6, 0.6];
@@ -153,30 +152,11 @@ function initProgram() {
 
 
     window.addEventListener("keydown", function(event) {
-        /*if (event.defaultPrevented) {
-            return;
-        }
-        var deltaT = 0;
-        var camera = that.sceneControl.camera;
-        var camRight = camera.getRight();
-        switch (event.key) {
-            case "ArrowLeft":
-                deltaT = -0.1;
-                break;
-            case "ArrowRight":
-                deltaT = 0.1;
-                break;
-        }
-
-        camera.position[0] += deltaT * camRight[0];
-        camera.position[1] += deltaT * camRight[1];
-        camera.position[2] += deltaT * camRight[2];*/
-
         if (event.defaultPrevented) {
             return;
         }
         var deltaT = 0;
-        var cylinder = that.objManager._getObject(1);
+        var avatar = that.gameControls.avatar;
         switch (event.key) {
             case "ArrowLeft":
                 deltaT = -0.01;
@@ -185,7 +165,7 @@ function initProgram() {
                 deltaT = 0.01;
                 break;
         }
-        cylinder.pos3d[0] += deltaT;
+        avatar.renderableObj.pos3d[0] += deltaT;
 
         event.preventDefault();
     }, true);
@@ -193,23 +173,11 @@ function initProgram() {
 }
 
 function createShapes() {
-    var n;
     if (!this.objManager) {
-        n = 0;
         this.objManager = new ObjectManager();
 
         var groundOptions = { width: 1, length: 1, position: [0, 0, 0] };
         this.objManager.createObject("ground", groundOptions);
-
-        var cylinderOptions = { position: [0, -0.5, 0], radius: 0.05, height: 0.1, nbSections: 12, rgb: [0.1, 0.2, 0.3] };
-        this.objManager.createObject("cylinder", cylinderOptions);
-    }
-    while (n <= 6) {
-        var randomX = ThreeDLib.random(-0.5, 0.5);
-        var randomY = ThreeDLib.random(-0.5, 0.5);
-        var cubeOptions = { dimension: 0.05, position: [randomX, randomY, 0.0] };
-        this.objManager.createObject("cube", cubeOptions);
-        n++;
     }
     return this.objManager;
 }
@@ -217,6 +185,7 @@ function createShapes() {
 function render(shaderProgram) {
     /* Step1: Prepare the canvas and get WebGL context */
     //********************************************************************/
+
     /* Step5: Drawing the required objects */
 
     // Clear the canvas
@@ -235,6 +204,7 @@ function render(shaderProgram) {
     gl.useProgram(shaderProgram);
 
     /*******************Transformation matrices***************************/
+
     // Scale matrix
     if (!this.tMat) {
         this.tMat = glMatrix.mat4.create();
@@ -257,7 +227,9 @@ function render(shaderProgram) {
 
     this.sceneControl.setNormalMat(gl, shaderProgram);
 
-    // Render objects
+    /*****************************Scene render*****************************/
+
+    // Render ground
     var objectsManager = createShapes();
     var objects = objectsManager.objectsArray;
     for (let index = 0; index < objects.length; index++) {
@@ -269,36 +241,14 @@ function render(shaderProgram) {
 
     // Cube animation
     var currentTime = (new Date()).getTime();
-    var gameControls = new GameControls(0.1);
-    var deltaTimeMilisec = currentTime - lastUpdateTime;
-    var velocity = gameControls._getVelocity();
-    var deltaY = velocity * deltaTimeMilisec / 1000.0;
-    var objectsCount = objects.length;
-    //var cameraPos = this.sceneControl.camera.position;
-    //var cameraBoundingSphereRadius = 0.1;
-    var cylinder = this.objManager._getObject(1);
-    var cylinderRadius = cylinder.radius;
-    for (var i = 0; i < objectsCount; i++) {
-        var cube = objectsManager._getObject(i);
-        var cubeBoudingSphereRadius = cube.dimension / Math.sqrt(2);
-        if (cube instanceof Cube && lastUpdateTime > 0.0) {
-            if (cube.pos3d[1] <= 0.5 && cube.pos3d[1] >= -0.5) {
-                cube.addPositionY(-deltaY);
-                // test collision
-                var distance = ThreeDLib.distance3D(cylinder.pos3d[0], cylinder.pos3d[1], cylinder.pos3d[2], cube.pos3d[0], cube.pos3d[1], cube.pos3d[2]);
-                if (distance <= (cylinderRadius + cubeBoudingSphereRadius)) {
-                    console.info("collision");
-                    cylinder.setColorsVbo(gl, [1, 0, 0]);
-                }
-            } else {
-                cube.setPositionY(0.5);
-                cylinder.setColorsVbo(gl, [0.1, 0.2, 0.3]);
-            }
-        }
-    }
-    // Update time
-    lastUpdateTime = currentTime;
+    this.gameControls.updateEnemyPosition(currentTime);
 
+    // render
+    this.gameControls.renderAvatar(gl, shaderProgram);
+    this.gameControls.renderEnemy(gl, shaderProgram);
+
+
+    /**********************************************************************/
 }
 
 function renderLoop() {
@@ -312,10 +262,16 @@ function initWebGL() {
     }
 }
 
+function initMyGame() {
+    if (!this.gameControls) {
+        this.gameControls = new GameControls();
+    }
+}
+
 function onLoad() {
-    //this.lastUpdateTime = 0.0;
     initWebGL();
-    initProgram();
+    initMyProgram();
+    initMyGame();
     if (gl) {
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);

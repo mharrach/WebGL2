@@ -10,6 +10,23 @@ class Cone {
         this.pointsArray = [];
         this.normalsArray = [];
     }
+    getPosition() {
+        return this.pos3d;
+    }
+    addPosition(x, y, z) {
+        this.pos3d[0] += x;
+        this.pos3d[1] += y;
+        this.pos3d[2] += z;
+    }
+    setPositionX(newPositionX) {
+        this.pos3d[0] = newPositionX;
+    }
+    setPositionY(newPositionY) {
+        this.pos3d[1] = newPositionY;
+    }
+    setPositionZ(newPositionZ) {
+        this.pos3d[2] = newPositionZ;
+    }
     _getVbo(gl) {
         if (!this.vbo) {
             var h = this.height;
@@ -115,6 +132,11 @@ class Cone {
 
         return { position: this.vbo, color: this.colorsVbo, normal: this.normalVbo };
     }
+    deleteVbo() {
+        gl.deleteBuffer(this.vbo);
+        gl.deleteBuffer(this.normalVbo);
+        gl.deleteBuffer(this.colorVbo);
+    }
     render(gl, shaderProgram) {
 
         var coord = gl.getAttribLocation(shaderProgram, "positions");
@@ -125,6 +147,9 @@ class Cone {
 
         var normal = gl.getAttribLocation(shaderProgram, "normals");
         gl.enableVertexAttribArray(normal);
+
+        var hasNormal_loc = gl.getUniformLocation(shaderProgram, "u_hasNormals");
+        gl.uniform1i(hasNormal_loc, true);
 
         var uObjectPos_loc = gl.getUniformLocation(shaderProgram, "objectPos");
         gl.uniform3fv(uObjectPos_loc, this.pos3d);

@@ -11,6 +11,23 @@ class Cylinder {
         this.pointsArray = [];
         this.normalsArray = [];
     }
+    getPosition() {
+        return this.pos3d;
+    }
+    addPosition(x, y, z) {
+        this.pos3d[0] += x;
+        this.pos3d[1] += y;
+        this.pos3d[2] += z;
+    }
+    setPositionX(newPositionX) {
+        this.pos3d[0] = newPositionX;
+    }
+    setPositionY(newPositionY) {
+        this.pos3d[1] = newPositionY;
+    }
+    setPositionZ(newPositionZ) {
+        this.pos3d[2] = newPositionZ;
+    }
     _getVbo(gl) {
         if (!this.vbo) {
             var h = this.height;
@@ -169,6 +186,11 @@ class Cylinder {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
         this.colorsVbo = color_buffer;
+    }
+    deleteVbo() {
+        gl.deleteBuffer(this.vbo);
+        gl.deleteBuffer(this.normalVbo);
+        gl.deleteBuffer(this.colorVbo);
     }
     render(gl, shaderProgram) {
 

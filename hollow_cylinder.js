@@ -12,6 +12,9 @@ class HollowCylinder {
         this.normalsArray = [];
         this.colorsArray = [];
     }
+    getPosition() {
+        return this.pos3d;
+    }
     _getVbo(gl) {
         if (!this.vbo) {
             var h = this.height;

@@ -8,14 +8,13 @@ class Cube {
         this.pointsArray = [];
         this.normalsArray = [];
     }
-    addPositionX(velocityXdeltaT) {
-        this.pos3d[0] += velocityXdeltaT;
+    getPosition() {
+        return this.pos3d;
     }
-    addPositionY(velocityXdeltaT) {
-        this.pos3d[1] += velocityXdeltaT;
-    }
-    addPositionZ(velocityXdeltaT) {
-        this.pos3d[2] += velocityXdeltaT;
+    addPosition(x, y, z) {
+        this.pos3d[0] += x;
+        this.pos3d[1] += y;
+        this.pos3d[2] += z;
     }
     setPositionX(newPositionX) {
         this.pos3d[0] = newPositionX;
@@ -131,6 +130,11 @@ class Cube {
         }
 
         return { position: this.vbo, color: this.colorsVbo, normal: this.normalVbo };
+    }
+    deleteVbo() {
+        gl.deleteBuffer(this.vbo);
+        gl.deleteBuffer(this.normalVbo);
+        gl.deleteBuffer(this.colorVbo);
     }
     render(gl, shaderProgram) {
 
