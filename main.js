@@ -178,6 +178,59 @@ function createShapes() {
 
         var groundOptions = { width: 1, length: 1, position: [0, 0, 0] };
         this.objManager.createObject("ground", groundOptions);
+
+        //object extrusion test (ㅏ)
+        /*var p1 = new Point2D(-0.2, -0.3);
+        var p2 = new Point2D(0, -0.3);
+        var p3 = new Point2D(0, -0.1);
+        var p4 = new Point2D(0.1, -0.1);
+        var p5 = new Point2D(0.1, 0.1);
+        var p6 = new Point2D(0, 0.1);
+        var p7 = new Point2D(0, 0.3);
+        var p8 = new Point2D(-0.2, 0.3);
+
+        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7, p8]);*/
+
+        //object extrusion test hexagone
+        /*var p1 = new Point2D(0, -0.2);
+        var p2 = new Point2D(0.2, -0.1);
+        var p3 = new Point2D(0.2, 0.1);
+        var p4 = new Point2D(0, 0.2);
+        var p5 = new Point2D(-0.2, 0.1);
+        var p6 = new Point2D(-0.2, -0.1);
+
+        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6]);*/
+
+        //object extrusion test random shape
+        /*var p1 = new Point2D(-0.2, -0.3);
+        var p2 = new Point2D(0, 0);
+        var p3 = new Point2D(0, -0.4);
+        var p4 = new Point2D(0.3, -0.3);
+        var p5 = new Point2D(0.2, -0.2);
+        var p6 = new Point2D(0, 0.3);
+        var p7 = new Point2D(-0.2, 0.2);
+
+        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7]);*/
+
+        //object extrusion test H shape
+        var p1 = new Point2D(0.1, -0.1);
+        var p2 = new Point2D(0.1, -0.2);
+        var p3 = new Point2D(0.2, -0.2);
+        var p4 = new Point2D(0.2, 0.2);
+        var p5 = new Point2D(0.1, 0.2);
+        var p6 = new Point2D(0.1, 0.1);
+        var p7 = new Point2D(-0.1, 0.1);
+        var p8 = new Point2D(-0.1, 0.2);
+        var p9 = new Point2D(-0.2, 0.2);
+        var p10 = new Point2D(-0.2, -0.2);
+        var p11 = new Point2D(-0.1, -0.2);
+        var p12 = new Point2D(-0.1, -0.1);
+
+        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]);
+
+        var mesh = this.geomModeler.extrudeProfile(0.2, profile2d, [0, 0, 1]);
+
+        this.objManager.objectsArray.push(mesh);
     }
     return this.objManager;
 }
@@ -239,13 +292,13 @@ function render(shaderProgram) {
         }
     }
 
-    // Cube animation
+    /*// Game start
     var currentTime = (new Date()).getTime();
     this.gameControls.updateEnemyPosition(currentTime);
 
     // render
     this.gameControls.renderAvatar(gl, shaderProgram);
-    this.gameControls.renderEnemy(gl, shaderProgram);
+    this.gameControls.renderEnemy(gl, shaderProgram);*/
 
 
     /**********************************************************************/
@@ -265,6 +318,9 @@ function initWebGL() {
 function initMyGame() {
     if (!this.gameControls) {
         this.gameControls = new GameControls();
+    }
+    if (!this.geomModeler) {
+        this.geomModeler = new GeometryModeler();
     }
 }
 
