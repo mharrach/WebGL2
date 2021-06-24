@@ -120,6 +120,12 @@ class Polygon2D {
         return false;
     }
     splitIntoPolygonsUsingIndices(indxA, indxB) {
+        var temp = 0;
+        if (indxB < indxA) {
+            temp = indxA;
+            indxA = indxB;
+            indxB = temp;
+        }
         var listOfPolygons = [];
         var pointsArrayA = [];
         var pointsArrayB = [];
@@ -127,7 +133,7 @@ class Polygon2D {
             if (i >= indxA && i <= indxB) {
                 pointsArrayA.push(this.pointsArray[i]);
             }
-            if (i <= indxA || i >= indxB) {
+            if (i >= indxB || i <= indxA) {
                 pointsArrayB.push(this.pointsArray[i]);
             }
         }

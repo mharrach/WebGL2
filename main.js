@@ -213,7 +213,7 @@ function createShapes() {
         var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7]);*/
 
         //object extrusion test H shape
-        var p1 = new Point2D(0.1, -0.1);
+        /*var p1 = new Point2D(0.1, -0.1);
         var p2 = new Point2D(0.1, -0.2);
         var p3 = new Point2D(0.2, -0.2);
         var p4 = new Point2D(0.2, 0.2);
@@ -226,7 +226,45 @@ function createShapes() {
         var p11 = new Point2D(-0.1, -0.2);
         var p12 = new Point2D(-0.1, -0.1);
 
-        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]);
+        var profile2d = new Profile2D([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]);*/
+
+        //object extrusion test star shape
+        /*var a = new Point(0, -0.2);
+        var b = new Point(0.2, -0.4);
+        var c = new Point(0.2, -0.2);
+        var d = new Point(0.4, -0.2);
+        var e = new Point(0.2, 0);
+        var f = new Point(0.4, 0.2);
+        var g = new Point(0.2, 0.2);
+        var h = new Point(0.2, 0.4);
+        var i = new Point(0, 0.2);
+        var j = new Point(-0.2, 0.4);
+        var k = new Point(-0.2, 0.2);
+        var l = new Point(-0.4, 0.2);
+        var m = new Point(-0.2, 0);
+        var n = new Point(-0.4, -0.2);
+        var o = new Point(-0.2, -0.2);
+        var p = new Point(-0.2, -0.4);
+
+        var profile2d = new Profile2D([a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p]);*/
+
+        var a = new Point(0.4, 0.4);
+        var b = new Point(-0.2, 0.4);
+        var c = new Point(-0.2, -0.2);
+        var d = new Point(0.4, -0.2);
+        var e = new Point(0.4, 0.2);
+        var f = new Point(0.1, 0.2);
+        var g = new Point(0.1, 0);
+        var h = new Point(0.2, 0);
+        var i = new Point(0.2, 0.1);
+        var j = new Point(0.3, 0.1);
+        var k = new Point(0.3, -0.1);
+        var l = new Point(-0.1, -0.1);
+        var m = new Point(-0.1, 0.3);
+        var n = new Point(0.4, 0.3);
+
+        var profile2d = new Profile2D([a, b, c, d, e, f, g, h, i, j, k, l, m, n]);
+
 
         var mesh = this.geomModeler.extrudeProfile(0.2, profile2d, [0, 0, 1]);
 
