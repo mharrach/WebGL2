@@ -113,11 +113,11 @@ class Polygon2D {
     isSegmentValidToSplitPolygon(newSegment) {
         var resultsList = this.intersectsWithSegment2D(newSegment);
         for (let i = 0; i < resultsList.length; i++) {
-            if (resultsList[i] === 0 || resultsList[i] === 3) {
-                return true;
+            if (resultsList[i] === 1 || resultsList[i] === 2) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
     splitIntoPolygonsUsingIndices(indxA, indxB) {
         var temp = 0;
@@ -180,7 +180,5 @@ class Polygon2D {
                 }
             }
         }
-
-
     }
 }

@@ -86,4 +86,25 @@ class Mesh {
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
 
     }
+    setColorsVbo(gl, newColors) {
+        gl.deleteBuffer(this.colorVbo);
+
+        var pts = this.vertexCount;
+        var colors = [];
+        for (let i = 0; i < pts; i++) {
+            colors.push(newColors[0], newColors[1], newColors[2], 1);
+        }
+
+        var color_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        this.colorsVbo = color_buffer;
+    }
+    deleteVbo() {
+        gl.deleteBuffer(this.vbo);
+        gl.deleteBuffer(this.normalVbo);
+        gl.deleteBuffer(this.colorVbo);
+    }
 }
